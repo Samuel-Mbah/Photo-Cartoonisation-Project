@@ -1,0 +1,41 @@
+import flickrapi
+import json
+
+# Replace with your Flickr API key and secret
+api_key = '2427bb7be0b977d4a50d81ef5e93244e'
+api_secret = '5cec8915fd62cb4c'
+
+flickr = flickrapi.FlickrAPI(api_key, api_secret, format='parsed-json')
+
+# Function to fetch photo URLs
+def fetch_photo_urls(tags, max_photos):
+    urls = []
+    page = 1
+    per_page = 500  # Maximum allowed by Flickr
+
+    while len(urls) < max_photos:
+        photos = flickr.photos.search(tags=tags, per_page=per_page, page=page, extras='url_o')
+        photos_page = photos['photos']['photo']
+        
+        if not photos_page:
+            break
+        
+        for photo in photos_page:
+            if 'url_o' in photo:
+                urls.append(photo['url_o'])
+        
+        page += 1
+        if len(urls) >= max_photos or page > photos['photos']['pages']:
+            break
+
+    return urls[:max_photos]
+
+# Fetch photo URLs (e.g., with the tag 'nature')
+photo_urls = fetch_photo_urls(tags='nature, city, landscape, sports, house,',  max_photos=6500)
+
+# Save URLs to image_urls.txt
+with open('image_urls.txt', 'w') as file:
+    for url in photo_urls:
+        file.write(url + '\n')
+
+print(f'Saved {len(photo_urls)} URLs to image_urls.txt')
